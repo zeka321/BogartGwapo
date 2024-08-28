@@ -6,9 +6,9 @@ const cache = new NodeCache({ stdTTL: 600, checkperiod: 120 });
 
 // Add more Apis or Ai services here.
 const services = [
-    { url: 'http://markdevs-last-api.onrender.com/api/v2/gpt4', param: 'query' },
+    { url: 'https://deku-rest-api.gleeze.com/new/gemini', param: 'prompt' },
     { url: 'https://markdevs-last-api.onrender.com/api/v3/gpt4', param: 'ask' },
-    { url: 'https://markdevs-last-api.onrender.com/gpt4', param: 'prompt', uid: 'uid' }
+    { url: 'https://deku-rest-api.gleeze.com/gpt4', param: 'prompt', uid: 'uid' }
 ];
 
 const designatedHeader = "🧋✨ |  Homer AI Bot";
