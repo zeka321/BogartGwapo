@@ -1,84 +1,65 @@
-const axios = require("axios");
-const fs = require("fs-extra");
-
-const apiKey = "hgEG2LSoC8VD5A2akNvcFySR";
+const axios = require('axios');
+const fs = require('fs-extra');
 
 module.exports = {
     config: {
-        name: "removebg",
-        version: "2.0",
-        aliases: ["rbg"],
-        author: "Strawhat Luffy & kshitiz",//fixed by kshitiz 
-        countDown: 20,
-        role: 0,
-        category: "image",
-        shortDescription: "Remove Background from Image",
-        longDescription: "Remove Background from any image. Reply to an image or add an image URL to use the command.",
-        guide: {
-            en: "{pn} reply an image URL | add URL",
-        },
+      name: "rbg",
+      aliases: [],
+      author: "Hazeyy/kira", // hindi ito collab, ako kasi nag convert :>
+      version: "69",
+      cooldowns: 5,
+      role: 0,
+      shortDescription: {
+        en: "Remove background in your photo"
+      },
+      longDescription: {
+        en: "Remove background in your photo"
+      },
+      category: "img",
+      guide: {
+        en: "{p}{n} [reply to an img]"
+      }
     },
 
-    onStart: async function ({ api, args, message, event }) {
-        const { getPrefix } = global.utils;
+onStart: async function({ api, event }) {
+  const args = event.body.split(/\s+/);
+  args.shift();
 
-        let imageUrl;
-        let type;
-        if (event.type === "message_reply") {
-            if (["photo", "sticker"].includes(event.messageReply.attachments[0].type)) {
-                imageUrl = event.messageReply.attachments[0].url;
-                type = isNaN(args[0]) ? 1 : Number(args[0]);
-            }
-        } else if (args[0]?.match(/(https?:\/\/.*\.(?:png|jpg|jpeg))/g)) {
-            imageUrl = args[0];
-            type = isNaN(args[1]) ? 1 : Number(args[1]);
-        } else {
-            return message.reply("Please provide an image URL or reply to an image..!⚠");
-        }
+  try {
+    const response = await axios.get("https://hazeyy-apis-combine.kyrinwu.repl.co");
+    if (response.data.hasOwnProperty("error")) {
+      return api.sendMessage(response.data.error, event.threadID, event.messageID);
+    }
 
-        const processingMessage = await message.reply("🕰️ | removing background...");
+    let pathie = __dirname + `/cache/removed_bg.jpg`;
+    const { threadID, messageID } = event;
 
-        try {
-            const response = await axios.post(
-                "https://api.remove.bg/v1.0/removebg",
-                {
-                    image_url: imageUrl,
-                    size: "auto",
-                },
-                {
-                    headers: {
-                        "X-Api-Key": apiKey,
-                        "Content-Type": "application/json",
-                    },
-                    responseType: "arraybuffer",
-                }
-            );
+    let photoUrl = event.messageReply ? event.messageReply.attachments[0].url : args.join(" ");
 
-            const outputBuffer = Buffer.from(response.data, "binary");
+    if (!photoUrl) {
+      api.sendMessage("📸 𝖯𝗅𝖾𝖺𝗌𝖾 𝗋𝖾𝗉𝗅𝗎 𝗍𝗈 𝖺 𝗉𝗁𝗈𝗍𝗈 𝗍𝗈 𝗉𝗋𝗈𝖼𝖾𝗌𝗌 𝖺𝗇𝖽 𝗋𝖾𝗆𝗈𝗏𝖾 𝖻𝖺𝖼𝗄𝗀𝗋𝗈𝗎𝗇𝖽𝗌.", threadID, messageID);
+      return;
+    }
 
-            const fileName = `${Date.now()}.png`;
-            const filePath = `./${fileName}`;
+    api.sendMessage("🕟 | 𝖱𝖾𝗆𝗈𝗏𝗂𝗇𝗀 𝖡𝖺𝖼𝗄𝗀𝗋𝗈𝗎𝗇𝖽, 𝗉𝗅𝖾𝖺𝗌𝖾 𝗐𝖺𝗂𝗍...", threadID, async () => {
+      try {
+        const response = await axios.get(`https://hazeyy-apis-combine.kyrinwu.repl.co/api/try/removebg?url=${encodeURIComponent(photoUrl)}`);
+        const processedImageURL = response.data.image_data;
 
-            fs.writeFileSync(filePath, outputBuffer);
+        const img = (await axios.get(processedImageURL, { responseType: "arraybuffer" })).data;
 
-            // Send the image as an attachment
-            await message.reply({
-                attachment: fs.createReadStream(filePath),
-            });
+        fs.writeFileSync(pathie, Buffer.from(img, 'binary'));
 
-            // Delete the temporary image file after sending
-            fs.unlinkSync(filePath);
-
-        } catch (error) {
-            message.reply("Something went wrong. Please try again later..!\n⚠🤦\\I already sent a message to Admin about the error. He will fix it as soon as possible.🙎");
-            const errorMessage = "----RemoveBG Log----\nSomething is causing an error with the removebg command.\nPlease check if the API key has expired.\nCheck the API key here: https://www.remove.bg/dashboard";
-            const { config } = global.GoatBot;
-            for (const adminID of config.adminBot) {
-                api.sendMessage(errorMessage, adminID);
-            }
-        }
-
-        // Delete the processing message
-        message.unsend(processingMessage.messageID);
-    },
+        api.sendMessage({
+          body: "✨ 𝖧𝖾𝗋𝖾'𝗌 𝗒𝗈𝗎𝗋 𝗂𝗆𝖺𝗀𝖾 𝗐𝗂𝗍𝗁𝗈𝗎𝗍 𝖻𝺰𝖺𝖼𝗄𝗀𝗋𝗈𝗎𝗇𝖺𝖺𝖴",
+          attachment: fs.createReadStream(pathie)
+        }, threadID, () => fs.unlinkSync(pathie), messageID);
+      } catch (error) {
+        api.sendMessage(`🔴 𝖤𝗋𝗋𝗈𝗋 𝗉𝗋𝗈𝖢𝖾𝗌𝗌𝖨𝗂𝗆𝖺𝖺𝖴: ${error}`, threadID, messageID);
+      }
+    });
+  } catch (error) {
+    api.sendMessage(`𝖤𝗋𝗋𝗈𝗋: ${error.message}`, event.threadID, event.messageID);
+   }
+ }
 };

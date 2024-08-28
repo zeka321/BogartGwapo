@@ -1,82 +1,62 @@
-const axios = require("axios");
-const fs = require('fs-extra');
-const { getStreamFromURL, shortenURL, randomString } = global.utils;
+const axios = require('axios');
+const fs = require('fs');
+const { GoatWrapper } = require('fca-liane-utils');
 
 module.exports = {
-  config: {
-    name: "spotify",
-    version: "1.0",
-    author: "Vex_Kshitiz",
-    countDown: 10,
-    role: 0,
-    shortDescription: "play song from spotify",
-    longDescription: "play song from spotify",
-    category: "music",
-    guide: "{pn} sing songname"
-  },
+		config: {
+				name: "spotify",
+				version: "1.0.0",
+				role: 0,
+				hasPermission: 0,
+				credits: "cliff",
+				countDown: 9,
+				author: "cliff",
+				shortDescription: "Search and play music from Spotify",
+				commandCategory: "spotify",
+				category: "audio",
+				hasPrefix: false,
+				usage: "[song name]",
+				cooldowns: 5,
+				usePrefix: false,
+				usages: "[song name]",
+				cooldown: 5
+		},
 
-  onStart: async function ({ api, event, args, message }) {
-     api.setMessageReaction("🕢", event.messageID, (err) => {}, true);
-    try {
-      let b = '';
+		onStart: async function ({ api, event, args }) {
+				const listensearch = encodeURIComponent(args.join(" "));
+				const apiUrl = `http://158.101.198.227:8609/spotifydl?title=${listensearch}`;
 
-      const c = async () => {
-        const d = event.messageReply.attachments[0];
-        if (d.type === "audio" || d.type === "video") {
-          const e = await shortenURL(d.url);
-          const f = await axios.get(`https://audio-recon-ahcw.onrender.com/kshitiz?url=${encodeURIComponent(e)}`);
-          return f.data.title;
-        } else {
-          throw new Error("Invalid attachment type.");
-        }
-      };
+				if (!listensearch) return api.sendMessage("Please provide the name of the song you want to search.", event.threadID, event.messageID);
 
-      if (event.messageReply && event.messageReply.attachments && event.messageReply.attachments.length > 0) {
-        b = await c();
-      } else if (args.length === 0) {
-        throw new Error("Please provide a song name.");
-      } else {
-        b = args.join(" ");
-      }
+				try {
+						api.sendMessage("🎵 | Searching music on Spotify. Please wait...", event.threadID, event.messageID);
 
-      const g = await axios.get(`https://spotify-play-iota.vercel.app/spotify?query=${encodeURIComponent(b)}`);
-      const h = g.data.trackURLs;
-      if (!h || h.length === 0) {
-        throw new Error("No track found for the provided song name.");
-      }
+						const response = await axios.get(apiUrl);
+						const { downloadUrl } = response.data;
 
-      const i = h[0];
-      const j = await axios.get(`https://sp-dl-bice.vercel.app/spotify?id=${encodeURIComponent(i)}`);
-      const k = j.data.download_link;
+						if (downloadUrl.status === 200) {
+								const filePath = `${__dirname}/cache/${Date.now()}.mp3`;
+								const writeStream = fs.createWriteStream(filePath);
 
-      const l = await downloadTrack(k);
+								const audioResponse = await axios.get(downloadUrl.result, { responseType: 'stream' });
 
-      const m = await shortenURL(k);
+								audioResponse.data.pipe(writeStream);
 
-      await message.reply({
-        body: `🎧 Playing: ${b}`,
-        attachment: fs.createReadStream(l)
-      });
-
-      console.log("Audio sent successfully.");
-
-    } catch (n) {
-      console.error("Error occurred:", n);
-      message.reply(`An error occurred: ${n.message}`);
-    } finally {
-    
-    }
-  }
+								writeStream.on('finish', () => {
+										api.sendMessage({
+												body: `🎧 Here's your music from Spotify. Enjoy listening!\n\nDownload: ${downloadUrl.result}\n\n💿 Now Playing...`,
+												attachment: fs.createReadStream(filePath),
+										}, event.threadID, () => fs.unlinkSync(filePath), event.messageID);
+								});
+						} else {
+								api.sendMessage("❓ | Sorry, couldn't find the requested music on Spotify.", event.threadID);
+						}
+				} catch (error) {
+						console.error(error);
+						api.sendMessage("🚧 | An error occurred while processing your request.", event.threadID);
+				}
+		}
 };
 
-async function downloadTrack(url) {
-  const o = await getStreamFromURL(url);
-  const p = `${__dirname}/tmp/${randomString()}.mp3`;
-  const q = fs.createWriteStream(p);
-  o.pipe(q);
-
-  return new Promise((resolve, reject) => {
-    q.on('finish', () => resolve(p));
-    q.on('error', reject);
-  });
-}
+const wrapper = new GoatWrapper(module.exports);
+wrapper.applyNoPrefix({ allowPrefix: true });
