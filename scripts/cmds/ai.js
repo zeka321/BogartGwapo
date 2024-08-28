@@ -11,7 +11,7 @@ const services = [
     { url: 'https://markdevs-last-api-2epw.onrender.com/gpt4', param: 'prompt', uid: 'uid' }
 ];
 
-const designatedHeader = "🧋✨ |  Homer AI Bot";
+const designatedHeader = "🧋✨ |  𝙷𝙾𝙼𝙴𝚁 𝙰𝙸 𝙱𝙾𝚃";
 
 const getAIResponse = async (question, messageID) => {
     // Check if response is cached
@@ -57,7 +57,7 @@ const handleCommand = async (api, event, args, message) => {
         const question = args.join(" ").trim();
         if (!question) return message.reply("Please provide a question to get an answer.");
         const { response, messageID } = await getAIResponse(question, event.messageID);
-        api.sendMessage(`🧋✨ | Homer AI Bot\n━━━━━━━━━━━━━━━━\n${response}\n━━━━━━━━━━━━━━━━`, event.threadID, messageID);
+        api.sendMessage(`🧋✨ | 𝙷𝙾𝙼𝙴𝚁 𝙰𝙸 𝙱𝙾𝚃\n━━━━━━━━━━━━━━━━\n${response}\n━━━━━━━━━━━━━━━━\n𝙳𝙴𝚅𝙴𝙻𝙾𝙿𝙴𝙳 𝙱𝚈 : 𝙷𝙾𝙼𝙴𝚁 𝚁𝙴𝙴𝙱𝙰𝚃𝙸𝚂`, event.threadID, messageID);
     } catch (error) {
         console.error("Error in handleCommand:", error.message);
         message.reply("An error occurred while processing your request.");
@@ -68,7 +68,7 @@ const onStart = async ({ api, event, args }) => {
     try {
         const input = args.join(' ').trim();
         const { response, messageID } = await getAIResponse(input, event.messageID);
-        api.sendMessage(`🧋✨ | Homer AI Bot\n━━━━━━━━━━━━━━━━\n${response}\n━━━━━━━━━━━━━━━━`, event.threadID, messageID);
+        api.sendMessage(`🧋✨ | 𝙷𝙾𝙼𝙴𝚁 𝙰𝙸 𝙱𝙾𝚃\n━━━━━━━━━━━━━━━\n${response}\n━━━━━━━━━━━━━━━━\n𝙳𝙴𝚅𝙴𝙻𝙾𝙿𝙴𝙳 𝙱𝚈 : 𝙷𝙾𝙼𝙴𝚁 𝚁𝙴𝙴𝙱𝙰𝚃𝙸𝚂`, event.threadID, messageID);
     } catch (error) {
         console.error("Error in onStart:", error.message);
         api.sendMessage("An error occurred while processing your request.", event.threadID);
@@ -94,7 +94,7 @@ const onChat = async ({ event, api }) => {
 
         try {
             const { response, messageID } = await getAIResponse(input, event.messageID);
-            api.sendMessage(`🧋✨ | Homer AI Bot\n━━━━━━━━━━━━━━━━\n${response}\n━━━━━━━━━━━━━━━━`, event.threadID, messageID);
+            api.sendMessage(`🧋✨ | 𝙷𝙾𝙼𝙴𝚁 𝙰𝙸 𝙱𝙾𝚃\n━━━━━━━━━━━━━━━━\n${response}\n━━━━━━━━━━━━━━━━\n𝙳𝙴𝚅𝙴𝙻𝙾𝙿𝙴𝙳 𝙱𝚈 : 𝙷𝙾𝙼𝙴𝚁 𝚁𝙴𝙴𝙱𝙰𝚃𝙸𝚂`, event.threadID, messageID);
         } catch (error) {
             console.error("Error in onChat:", error.message);
             api.sendMessage("An error occurred while processing your request.", event.threadID);
