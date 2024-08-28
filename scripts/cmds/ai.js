@@ -8,7 +8,7 @@ const cache = new NodeCache({ stdTTL: 600, checkperiod: 120 });
 const services = [
     { url: 'https://markdevs-last-api-2epw.onrender.com/api/v2/gpt4', param: 'query' },
     { url: 'https://markdevs-last-api.onrender.com/api/v3/gpt4', param: 'ask' },
-    { url: 'https://deku-rest-api.gleeze.com/gpt4', param: 'prompt', uid: 'uid' }
+    { url: 'https://markdevs-last-api-2epw.onrender.com/gpt4', param: 'prompt', uid: 'uid' }
 ];
 
 const designatedHeader = "🧋✨ |  Homer AI Bot";
